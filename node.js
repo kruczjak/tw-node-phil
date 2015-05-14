@@ -83,7 +83,7 @@ Philosopher.prototype.startNaive = function (count) {
         });
     } else {
         //output
-        console.log(id, '=', new Date().getTime() - startTimesNaive[id]);
+        console.log(id,  new Date().getTime() - startTimesNaive[id]);
     }
 };
 
@@ -134,7 +134,7 @@ Philosopher.prototype.startAsym = function (count) {
         }
     } else {
         //output
-        console.log(id, '=', new Date().getTime() - startTimesAsym[id]);
+        console.log(id,  new Date().getTime() - startTimesAsym[id]);
     }
 };
 
@@ -152,7 +152,7 @@ Philosopher.prototype.startConductor = function (count) {
     if (startTimesConductor[id] === undefined) startTimesConductor[id] = new Date().getTime();
 
     if (count > 0) conductor.please(this, count);
-    else console.log(id, '=', new Date().getTime() - startTimesConductor[id]);
+    else console.log(id,  new Date().getTime() - startTimesConductor[id]);
 };
 
 var Conductor = function () {
@@ -219,7 +219,7 @@ for (var i = 0; i < N; i++) {
 }
 
 for (var i = 0; i < N; i++) {
-    //philosophers[i].startNaive(10);
-    //philosophers[i].startAsym(10);
+    //philosophers[i].startNaive(100);
+    //philosophers[i].startAsym(100);
     philosophers[i].startConductor(10);
 }
