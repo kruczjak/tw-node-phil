@@ -11,6 +11,62 @@
 //    implementacji zmierz całkowity czas oczekiwania każdego filozofa. 
 //    Wyniki przedstaw na wykresach.
 
+var startTimesNaive = {}, startTimesConductor = {}, startTimesAsym = {};
+
+
+var Conductor = function () {
+    this.queue = [];
+    return this;
+};
+var conductor = new Conductor();
+
+Conductor.prototype.please = function (philosopher, count) {
+    var id = philosopher.id,
+        f1 = philosopher.f1,
+        f2 = philosopher.f2,
+        forks = philosopher.forks;
+
+    if (forks[f1].state === 0 && forks[f2].state === 0) {
+        forks[f1].state = 1;
+        forks[f2].state = 1;
+        philosopher.forking(count);
+    } else {
+        this.queue.push([id, count]);
+    }
+};
+
+Conductor.prototype.release = function (philosopher, count) {
+    var f1 = philosopher.f1,
+        f2 = philosopher.f2,
+        forks = philosopher.forks,
+        conductor = this;
+
+    forks[f1].state = 0;
+    forks[f2].state = 0;
+    philosopher.startConductor(count - 1);
+
+    var disposeQueue = function () {
+        if (conductor.queue.length !== 0) {
+            var id = conductor.queue[0][0],
+                count = conductor.queue[0][1],
+                f1 = philosophers[id].f1,
+                f2 = philosophers[id].f2,
+                forks = philosophers[id].forks;
+
+            if (forks[f1].state === 0 && forks[f2].state === 0) {
+                conductor.queue.shift();
+                forks[f1].state = 1;
+                forks[f2].state = 1;
+                philosophers[id].forking(count);
+                disposeQueue();
+            }
+        }
+    };
+
+    disposeQueue();
+};
+
+
 var Fork = function() {
     this.state = 0;
     return this;
@@ -45,10 +101,19 @@ Fork.prototype.release = function() {
 var Philosopher = function(id, forks) {
     this.id = id;
     this.forks = forks;
-    this.f1 = id % forks.lengtforks[f2]h;
+    this.f1 = id % forks.length;
     this.f2 = (id+1) % forks.length;
     return this;
 }
+Philosopher.prototype.forking = function (count) {
+    var philosopher = this;
+    var r = Math.floor(Math.random() * this.eatTime);
+    startTimesConductor[philosopher.id] += r;
+    setTimeout(function () {
+        conductor.release(philosopher, count);
+    }, r);
+};
+
 
 Philosopher.prototype.startNaive = function(count) {
     var forks = this.forks,
@@ -127,8 +192,10 @@ Philosopher.prototype.startNaive = function(count) {
                 startTimesConductor[id] = new Date().getTime();
             }
 
+
+
             if (count != 0) {
-                conductor.ask(this, count);
+                conductor.please(this, count);
             } else {
                 console.log(id, new Date().getTime() - startTimesConductor[id]);
             }
@@ -153,68 +220,8 @@ Philosopher.prototype.startNaive = function(count) {
 
             for (var i = 0; i < N; i++) {
                 philosophers[i].startNaive(1000);
+                //philosophers[i].startAsym(1000);
+                //philosophers[i].startConductor(10);
             }
 
-Philosopher.prototype.giveForks = function (count) {
-    var philosopher = this;
-    var r = Math.floor(Math.random() * this.eatTime);
-    startTimesConductor[philosopher.id] += r;
-    setTimeout(function () {
-        conductor.release(philosopher, count);
-    }, r);
-};
 
-var Conductor = function () {
-    this.queue = [];
-    return this;
-};
-
-Conductor.prototype.ask = function (philosopher, count) {
-    var id = philosopher.id,
-        f1 = philosopher.f1,
-        f2 = philosopher.f2,
-        forks = philosopher.forks;
-
-//    if (this.queue.length === 0) {
-    if (forks[f1].state === 0 && forks[f2].state === 0) {
-        forks[f1].state = 1;
-        forks[f2].state = 1;
-        philosopher.giveForks(count);
-    } else {
-        this.queue.push([id, count]);
-    }
-//    } else {
-//        this.queue.push([id, count]);
-//    }
-};
-
-Conductor.prototype.release = function (philosopher, count) {
-    var f1 = philosopher.f1,
-        f2 = philosopher.f2,
-        forks = philosopher.forks,
-        conductor = this;
-
-    forks[f1].state = 0;
-    forks[f2].state = 0;
-    philosopher.startConductor(count - 1);
-
-    var disposeQueue = function () {
-        if (conductor.queue.length !== 0) {
-            var id = conductor.queue[0][0],
-                count = conductor.queue[0][1],
-                f1 = philosophers[id].f1,
-                f2 = philosophers[id].f2,
-                forks = philosophers[id].forks;
-
-            if (forks[f1].state === 0 && forks[f2].state === 0) {
-                conductor.queue.shift();
-                forks[f1].state = 1;
-                forks[f2].state = 1;
-                philosophers[id].giveForks(count);
-                disposeQueue();
-            }
-        }
-    };
-
-    disposeQueue();
-};
